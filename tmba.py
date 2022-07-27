@@ -53,6 +53,6 @@ def crawler(url, lang='tw'):
 
 if __name__ == "__main__":
     url = 'https://www.tmba.org.tw/zh-TW/member-search?page='
+    crawler(url, 'tw')
     url = 'https://www.tmba.org.tw/en/member-search?page='
     crawler(url, 'en')
-    crawler(url, 'tw')

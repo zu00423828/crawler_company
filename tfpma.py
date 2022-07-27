@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup as Soup
 import pandas as pd
-
+import time
 
 columns = ["name", "comp_id", "owner", "comp_phone", "comp_address", "fact_phone",
            "fact_fax", "fact_address", "web_link", "property", "contect_mail", "employee", "keywords", ]
@@ -10,15 +10,16 @@ en_keywords = ['ADDRESS', 'TEL', 'FAX', 'WEB SITE', 'E-MAIL', 'PRESIDENT']
 
 
 def info_process(info_urls):
-    sess = requests.Session()
-    sess.headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36'
+    # sess = requests.Session()
+    # sess.headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36'
     rows = []
     seq = '：'
     for name, info_url in info_urls:
         d = {c: None for c in columns}
-
-        res = sess.get(f'{url_root}{info_url}')
+        time.sleep(2)
+        res = session.get(f'{url_root}{info_url}')
         if '/en/' in res.url:
+            print('is redirection')
             seq = ':'
         soup = Soup(res.text, 'lxml')
         try:
@@ -45,7 +46,7 @@ def crawler(url, lang='tw'):
     info_links = []
     sum = 0
     for i in range(1, 15):
-        res = requests.get(f'{url}{i}')
+        res = session.get(f'{url}{i}')
         soup = Soup(res.text, "lxml")
         todo_list = soup.find_all('div',
                                   class_='toggle faq category01 category03 clearfix')
@@ -57,11 +58,13 @@ def crawler(url, lang='tw'):
     print(sum)
     rows = info_process(info_links)
     df = df.append(rows)
-    df.to_excel('tfpma-tw.xlsx', index=False)
+    df.to_excel('tfpma-tw.xlsx', index=False, columns=columns)
 
 
 if __name__ == "__main__":
     url_root = 'http://www.tfpma.org.tw/'
     url = 'http://www.tfpma.org.tw/zh-TW/member/index.html?page='
     # url = 'http://www.tfpma.org.tw/en/member/index.html?page='
+    session = requests.Session()
+    session.headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36'
     crawler(url)
