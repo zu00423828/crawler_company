@@ -3,9 +3,9 @@ from bs4 import BeautifulSoup as Soup
 import pandas as pd
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.chrome.service import Service
-from fake_useragent import FakeUserAgent
+from fake_useragent import UserAgent
 
-columns = ["name", "comp_id", "owner", "comp_phone", "comp_address", "fact_phone",
+columns = ["name", "comp_id", "owner", "comp_phone", 'comp_fax', "comp_address", "fact_phone",
            "fact_fax", "fact_address", "web_link", "property", "contect_mail", "employee", "keywords"]
 
 tw_keywords = ['負責人', '電話', '傳真', '地址', 'Email', '網址']
@@ -19,13 +19,12 @@ def process_info(info_list, lang='tw'):
         keywords = en_keywords
     if len(info_list) == 1:
         print('len', len(info_list))
-        assert 'len is not enough'
-    # keywords =
+        raise 'len is not enough'
     for item in info_list:
         item_text = item.text.strip()
         if keywords[1] in item_text:
             last_key = keywords[1]
-            dict[last_key] = item_text.replace(keywords[1], '').strip()
+            dict[last_key] = item_text.split('：')[1].strip()
         elif keywords[2] in item_text:
             last_key = keywords[2]
             dict[last_key] = item_text.split('：')[1].strip()
@@ -48,9 +47,10 @@ def process_info(info_list, lang='tw'):
         #         dict[diff_key] = None
         # # print(dict.values())
         # # print(dict.keys())
-        for keyword in keywords:
-            if keyword not in dict.keys():
-                dict[keyword] = None
+    for keyword in keywords[1:]:
+        if keyword not in dict.keys():
+            dict[keyword] = None
+            print('not in keyword', keyword)
 
     return dict[keywords[1]], dict[keywords[2]], dict[keywords[3]], dict[keywords[4]], dict[keywords[5]]
 
@@ -74,7 +74,7 @@ def crawler_info(info_links, lang='tw'):
     for link in info_links:
         row = {c: None for c in columns}
 
-        res = requests.get(link)
+        res = sess.get(link)
         soup = Soup(res.text, 'lxml')
         # print(link)
         name_list = soup.find_all('div', class_='_1KV2M')
@@ -87,16 +87,17 @@ def crawler_info(info_links, lang='tw'):
             find_element = soup.find_all(
                 class_='_1Q9if _3bcaz')
             basic_info = find_element[element_index[0]].find_all('h3')
-            president = basic_info[1].text.replace(
-                tw_keywords[0], '').strip()  # president
+            president = basic_info[1].text.split(
+                '：', 1)[-1].strip()  # president
             Information = find_element[element_index[1]].find_all('h3')
-            phone, fax, address, email, web = process_info(Information)
+            phone, fax, address, email, web = process_info(
+                Information, lang=lang)
             product_info = find_element[element_index[2]].find_all(
                 'h2', class_='font_2')
             text_list = [temp.text for temp in product_info]
             product = '、'.join(text_list)
-            d = {'name': name, 'owner': president, "comp_phone": phone, "comp_address": address,
-                 "fact_phone": phone, 'fact_fax': fax, 'fact_address': address, 'web_link': web, 'contect_mail': email, 'keywords': product}
+            d = {'name': name, 'owner': president, "comp_phone": phone, "comp_address": address, "comp_fax": fax,
+                 'web_link': web, 'contect_mail': email, 'keywords': product}
             row.update(d)
             rows.append(row)
         except Exception as e:
@@ -114,7 +115,7 @@ def crawler(url):
     href_list = []
     for page in page_list:
         print(f'{url}/{page}')
-        response = requests.get(f'{url}/{page}')
+        response = sess.get(f'{url}/{page}')
         soup = Soup(response.text, 'lxml')
         todo_list = soup.find_all(class_='_1BGyP _3D_sI')
         for item in todo_list:
@@ -130,11 +131,13 @@ def crawler(url):
     rows = crawler_info(href_list, 'en')
     en_df = en_df.append(rows)
     en_df.to_excel('twma_en.xlsx', index=False)
-    # rows = crawler_en_info(href_list)
-    # en_df = en_df.append(rows)
-    # tw_df.to_excel('twma_en.xlsx', columns=columns, index=False)
 
 
 if __name__ == "__main__":
     url = 'https://www.twma.org.tw/'
-    crawler(url)
+    sess = requests.Session()
+    ua = UserAgent()
+    sess.headers['user-agent'] = ua.google
+    # crawler(url)
+    url = 'https://www.twma.org.tw/unitek-machinery'
+    res = sess.get(url)

@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup as Soup
 import pandas as pd
 
 
-columns = ["name", "comp_id", "owner", "comp_phone", "comp_address", "fact_phone",
+columns = ["name", "comp_id", "owner", "comp_phone", 'comp_fax', "comp_address", "fact_phone",
            "fact_fax", "fact_address", "web_link", "property", "contect_mail", "employee", "keywords", ]
 
 tw_keywords = ['聯絡地址：', '聯絡電話：', '傳真：', '生產項目：']
@@ -28,20 +28,21 @@ def crawler(url, lang='tw'):
                 info_rows = information.find_all('div')
                 for info_row in info_rows:
                     if keywords[0] in info_row.text:
-                        address = info_row.text.split("：")[-1]
+                        address = info_row.text.split("：")[-1].strip()
                         d.update({"comp_address": address,
-                                 "fact_address": address})
+                                  })
                     if keywords[1] in info_row.text:
-                        phone = info_row.text.split("：")[-1]
-                        d.update({"comp_phone": phone, "fact_phone": phone})
+                        phone = info_row.text.split("：")[-1].strip()
+                        d.update({"comp_phone": phone, })
                     if keywords[2] in info_row.text:
-                        fax = info_row.text.split("：")[-1]
-                        d.update({"fact_fax": fax})
+                        fax = info_row.text.split("：")[-1].strip()
+                        d.update({"comp_fax": fax})
                     if keywords[3] in info_row.text:
-                        product = info_row.text.split("：")[-1]
+                        product = info_row.text.split("：")[-1].strip()
                         d.update({"keywords": product})
-            email = item.find_all('a')[0].get('href')
-            web_link = item.find_all('a')[-1].get('href')
+            email = item.find_all('a')[0].get('href').replace('mailto:', '')
+            web_link = item.find_all(
+                'a')[-1].get('href')
             if len(web_link) < 10:
                 web_link = None
             d.update({'contect_mail': email})

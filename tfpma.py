@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup as Soup
 import pandas as pd
 import time
 
-columns = ["name", "comp_id", "owner", "comp_phone", "comp_address", "fact_phone",
+columns = ["name", "comp_id", "owner", "comp_phone", "comp_fax", "comp_address", "fact_phone",
            "fact_fax", "fact_address", "web_link", "property", "contect_mail", "employee", "keywords", ]
 tw_keywords = ['工廠地址', '電話', '傳真', '網址', '電子信箱', '負責人']
 en_keywords = ['ADDRESS', 'TEL', 'FAX', 'WEB SITE', 'E-MAIL', 'PRESIDENT']
@@ -34,7 +34,7 @@ def info_process(info_urls):
             products = product.text.strip()
             # print(name, address, phone, fax, web, email, president, keywords)
             d.update({'name': name, 'owner': president,
-                      'comp_phone': phone, 'comp_address': address, 'fact_phone': phone, 'fact_fax': fax, 'fact_address': address, 'web_link': web, 'contect_mail': email, 'keywords': products})
+                      'comp_phone': phone, 'comp_fax': fax, 'comp_address': address, 'web_link': web, 'contect_mail': email, 'keywords': products})
             rows.append(d)
         except Exception as e:
             print(name, info_url, e)
@@ -58,13 +58,14 @@ def crawler(url, lang='tw'):
     print(sum)
     rows = info_process(info_links)
     df = df.append(rows)
-    df.to_excel('tfpma-tw.xlsx', index=False, columns=columns)
+    df.to_excel(f'tfpma-{lang}.xlsx', index=False, columns=columns)
 
 
 if __name__ == "__main__":
     url_root = 'http://www.tfpma.org.tw/'
-    url = 'http://www.tfpma.org.tw/zh-TW/member/index.html?page='
-    # url = 'http://www.tfpma.org.tw/en/member/index.html?page='
+    tw_url = 'http://www.tfpma.org.tw/zh-TW/member/index.html?page='
+    en_url = 'http://www.tfpma.org.tw/en/member/index.html?page='
     session = requests.Session()
     session.headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36'
-    crawler(url)
+    crawler(tw_url, 'tw')
+    crawler(en_url, 'en')
