@@ -102,7 +102,6 @@ def crawler_info(info_links, lang='tw'):
             rows.append(row)
         except Exception as e:
             print(link, e)
-            continue
     # print(rows)
     return rows
 
@@ -138,6 +137,6 @@ if __name__ == "__main__":
     sess = requests.Session()
     ua = UserAgent()
     sess.headers['user-agent'] = ua.google
-    # crawler(url)
-    url = 'https://www.twma.org.tw/unitek-machinery'
-    res = sess.get(url)
+    crawler(url)
+    # url = 'https://www.twma.org.tw/unitek-machinery'
+    # res = sess.get(url)
