@@ -51,7 +51,7 @@ def crawler(url, lang='tw'):
             name, phone, fax, address, website, email, product = crawler_info(
                 full_href, lang=lang)
             row.update({'name': name, 'comp_phone': phone, 'comp_fax': fax, 'comp_address': address,
-                       'web_link': website, 'contect_mail': email, 'keyword': product})
+                       'web_link': website, 'contect_mail': email, 'keywords': product})
             rows.append(row)
         df = df.append(rows)
     # # spnsor member
