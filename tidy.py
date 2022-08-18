@@ -55,7 +55,8 @@ if __name__ == '__main__':
                       'twma_tw.xlsx', 'tfpma-tw.xlsx', 'pack-tw.xlsx']
     new_df = pd.DataFrame()
     for excel_path in tw_excel_paths:
-        df = pd.read_excel(os.path.join(root, excel_path))
+        df = pd.read_excel(os.path.join(root, excel_path),
+                           converters={'comp_id': str})
         df = tidy_data(df)
         new_df = new_df.append(df)
     new_df.to_excel('comp_list-tw.xlsx', index=False)
